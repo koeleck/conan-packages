@@ -26,6 +26,8 @@ class AssimpConan(ConanFile):
         tools.replace_in_file('assimp-{}/CMakeLists.txt'.format(self.version), 'PROJECT( Assimp )', '''PROJECT( Assimp )
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()''')
+        # Use assimp's minizip
+        ools.replace_in_file('assimp-{}/CMakeLists.txt'.format(self.version), 'use_pkgconfig(UNZIP minizip)', '')
 
     def build(self):
         cmake = CMake(self)
@@ -43,11 +45,14 @@ conan_basic_setup()''')
         self.copy('*.h', dst='include', src='{}/include'.format(self.build_folder))
         self.copy('*.h', dst='include', src='{}/assimp-{}/include'.format(self.source_folder, self.version))
         self.copy('*.inl', dst='include', src='{}/assimp-{}/include'.format(self.source_folder, self.version))
-        self.copy('*.lib', dst='lib', src=self.build_folder, keep_path=False)
-        self.copy('*.dll', dst='lib', src=self.build_folder, keep_path=False)
-        self.copy('*.so', dst='lib', src=self.build_folder, keep_path=False)
-        self.copy('*.dylib', dst='lib', src=self.build_folder, keep_path=False)
-        self.copy('*.a', dst='lib', src=self.build_folder, keep_path=False)
+        if self.options.shared:
+            self.copy('assimp*.lib', dst='lib', src='{}/lib'.format(self.build_folder), keep_path=False)
+        else:
+            self.copy('*.lib', dst='lib', src='{}/lib'.format(self.build_folder), keep_path=False)
+        self.copy('*.dll', dst='lib', src='{}/bin'.format(self.build_folder), keep_path=False)
+        self.copy('*.so', dst='lib', src='{}/lib'.format(self.build_folder), keep_path=False)
+        self.copy('*.dylib', dst='lib', src='{}/lib'.format(self.build_folder), keep_path=False)
+        self.copy('*.a', dst='lib', src='{}/lib'.format(self.build_folder), keep_path=False)
 
     def package_info(self):
         if self.settings.compiler == 'Visual Studio':
