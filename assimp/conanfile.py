@@ -27,7 +27,7 @@ class AssimpConan(ConanFile):
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()''')
         # Use assimp's minizip
-        ools.replace_in_file('assimp-{}/CMakeLists.txt'.format(self.version), 'use_pkgconfig(UNZIP minizip)', '')
+        tools.replace_in_file('assimp-{}/CMakeLists.txt'.format(self.version), 'use_pkgconfig(UNZIP minizip)', '')
 
     def build(self):
         cmake = CMake(self)
