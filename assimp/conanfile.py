@@ -6,7 +6,7 @@ import os
 class AssimpConan(ConanFile):
     name = 'assimp'
     version = '4.1.0'
-    license = 'Modified BSD License'
+    license = 'BSD 3-Clause'
     url = '<Package recipe repository url here, for issues about the package>'
     description = 'Conan package for assimp library'
     requires = 'zlib/1.2.11@conan/stable'
