@@ -55,7 +55,7 @@ conan_basic_setup()''')
             self.cpp_info.defines.append('GLFW_DLL')
         if self.settings.os == 'Windows':
             if self.options.shared:
-                self.cpp_info.libs = ['glfwdll']
+                self.cpp_info.libs = ['glfw3dll']
             else:
                 self.cpp_info.libs = ['glfw3']
         else:
