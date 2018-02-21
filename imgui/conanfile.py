@@ -7,8 +7,8 @@ class ImguiConan(ConanFile):
     name = 'imgui'
     version = '1.53'
     license = 'MIT'
-    url = '<Package recipe repository url here, for issues about the package>'
-    description = '<Description of Imgui here>'
+    url = 'https://github.com/koeleck/conan-packages/tree/master/imgui'
+    description = 'ImGUI conan package'
     settings = 'os', 'compiler', 'build_type', 'arch'
     exports = 'CMakeLists.txt'
     generators = 'cmake'
@@ -34,6 +34,7 @@ conan_basic_setup()''')
 
     def package(self):
         imgui_dir = '{}/imgui-{}'.format(self.source_folder, self.version)
+        self.copy('license*', dst='.', src=imgui_dir, ignore_case=True, keep_path=False)
         self.copy('imgui.h', dst='include/imgui', src=imgui_dir)
         self.copy('imconfig.h', dst='include/imgui', src=imgui_dir)
         self.copy('*.lib', dst='lib', src='{}/lib'.format(self.build_folder), keep_path=False)
