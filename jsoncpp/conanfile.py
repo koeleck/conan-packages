@@ -6,8 +6,8 @@ class JsoncppConan(ConanFile):
     name = 'jsoncpp'
     version = '1.8.4'
     license = 'MIT'
-    url = '<Package recipe repository url here, for issues about the package>'
-    description = '<Description of Jsoncpp here>'
+    url = 'https://github.com/koeleck/conan-packages/tree/master/jsoncpp'
+    description = 'A C++ library for interacting with JSON.'
     settings = 'os', 'compiler', 'build_type', 'arch'
     options = {'shared': [True, False]}
     default_options = 'shared=False'
@@ -35,8 +35,11 @@ conan_basic_setup()''')
         cmake.build()
 
     def package(self):
+        src_folder = '{}/jsoncpp-{}'.format(self.source_folder, self.version)
         lib_folder = '{}/lib'.format(self.build_folder)
-        self.copy('*.h', dst='include', src='{}/jsoncpp-{}/include'.format(self.source_folder, self.version))
+
+        self.copy('license*', dst='.', src=src_folder, ignore_case=True, keep_path=False)
+        self.copy('*.h', dst='include', src=src_folder)
         self.copy('*.lib', dst='lib', src=lib_folder, keep_path=False)
         self.copy('*.dll', dst='lib', src=lib_folder, keep_path=False)
         self.copy('*.so', dst='lib', src=lib_folder, keep_path=False)
