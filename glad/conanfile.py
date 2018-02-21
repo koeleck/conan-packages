@@ -6,8 +6,8 @@ class GladConan(ConanFile):
     name = 'glad'
     version = '0.1.16a0'
     license = 'MIT'
-    url = '<Package recipe repository url here, for issues about the package>'
-    description = '<Description of Glad here>'
+    url = 'https://github.com/koeleck/conan-packages/tree/master/glad'
+    description = 'GL/GLES/EGL/GLX/WGL Loader-Generator based on the official specs.'
     settings = 'os', 'compiler', 'build_type', 'arch'
     options = {'profile': ['core', 'compatibility'],
                'api': 'ANY',
