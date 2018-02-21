@@ -2,12 +2,12 @@ from conans import ConanFile, CMake, tools
 from conans.tools import download, check_sha256, unzip
 import os
 
-class JsonConan(ConanFile):
-    name = 'json'
+class RapidJSONConan(ConanFile):
+    name = 'rapidjson'
     version = '1.1.0'
     license = 'MIT, BSD'
-    url = '<Package recipe repository url here, for issues about the package>'
-    description = '<Description of Json here>'
+    url = 'https://github.com/koeleck/conan-packages/tree/master/rapidjson'
+    description = 'A fast JSON parser/generator for C++ with both SAX/DOM style API'
 
     def source(self):
         zip_file = 'v{}.zip'.format(self.version)
@@ -17,5 +17,7 @@ class JsonConan(ConanFile):
         os.unlink(zip_file)
 
     def package(self):
-        self.copy('*', dst='include', src='{}/rapidjson-{}/include'.format(self.source_folder, self.version))
+        src_folder = '{}/rapidjson-{}'.format(self.source_folder, self.version)
+        self.copy('license*', dst='.', src=src_folder, ignore_case=True, keep_path=False)
+        self.copy('*', dst='include', src='{}/include'.format(src_folder))
 
