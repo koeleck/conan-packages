@@ -41,7 +41,7 @@ class TBBConan(ConanFile):
             else:
                 raise Exception('This package needs mingw32-make in the path to build')
         else:
-            self.run('cd {}/tbb && make arch={} {}'.format(arch, self.source_folder, extra))
+            self.run('cd {}/tbb && make arch={} {}'.format(self.source_folder, arch, extra))
 
     def package(self):
         self.copy('*.h', 'include/tbb', 'tbb/include/tbb')
