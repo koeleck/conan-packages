@@ -7,7 +7,7 @@ class SpirvtoolsConan(ConanFile):
     name = 'spirv-tools'
     version = '2018.0'
     license = 'Apache 2.0'
-    url = '<Package recipe repository url here, for issues about the package>'
+    url = 'https://github.com/koeleck/conan-packages/tree/master/spirv-tools'
     description = 'SPIRV-Tools package for conan'
     settings = 'os', 'compiler', 'build_type', 'arch'
     options = {'shared': [True, False]}
@@ -43,6 +43,7 @@ conan_basic_setup()''')
         cmake.build()
 
     def package(self):
+        self.copy('license*', dst='.', src='{}/spirv-tools'.format(self.source_folder), ignore_case=True, keep_path=False)
         self.copy('*', dst='include', src='{}/spirv-tools/include'.format(self.source_folder))
         # glslang needs this header (when optimizer is enabled)
         self.copy('message.h', dst='include/spirv-tools', src='{}/spirv-tools/source'.format(self.source_folder), keep_path=False)
