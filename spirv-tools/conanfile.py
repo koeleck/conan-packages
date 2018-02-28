@@ -5,6 +5,7 @@ import os, shutil
 
 class SpirvtoolsConan(ConanFile):
     name = 'spirv-tools'
+    _revision = 'c430a41ae32c24bfc0ea87aac1bb19526caafb4e'
     version = '2018.0'
     license = 'Apache 2.0'
     url = 'https://github.com/koeleck/conan-packages/tree/master/spirv-tools'
@@ -52,6 +53,9 @@ conan_basic_setup()''')
         self.copy('*.so', dst='lib', keep_path=False)
         self.copy('*.dylib', dst='lib', keep_path=False)
         self.copy('*.a', dst='lib', keep_path=False)
+
+        with open('{}/revision.txt'.format(self.package_folder), 'w') as rev_file:
+            rev_file.write(self._revision)
 
     def package_info(self):
         self.cpp_info.libs = ['SPIRV-Tools', 'SPIRV-Tools-link', 'SPIRV-Tools-opt']
