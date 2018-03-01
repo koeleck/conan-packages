@@ -10,6 +10,11 @@ def _create_directory(path):
             pass
         else:
             raise
+def _make_empty_file(path):
+    parent_dir = os.path.dirname(path)
+    _create_directory(parent_dir)
+    with open(path, 'w') as fp:
+        pass
 
 class VulkantoolsConan(ConanFile):
     name = 'VulkanTools'
@@ -70,8 +75,11 @@ conan_basic_setup(NO_OUTPUT_DIRS)''')
         # since we're not using the embedded glslang source, but our own packages:
         # manually generate spirv_tools_commit_id.h and make sure the generator script is not
         # executed
-        with open('{}/VulkanTools/submodules/Vulkan-LoaderAndValidationLayers/scripts/external_revision_generator.py'.format(self.source_folder), 'w') as fp:
-            pass # truncate
+        lvl_dir = '{}/VulkanTools/submodules/Vulkan-LoaderAndValidationLayers'.format(self.source_folder)
+        _make_empty_file('{}/scripts/external_revision_generator.py'.format(lvl_dir))
+        _make_empty_file('{}/external/glslang/External/spirv-tools/.git/HEAD'.format(lvl_dir))
+        _make_empty_file('{}/external/glslang/External/spirv-tools/.git/index'.format(lvl_dir))
+
         with open('{}/revision.txt'.format(self.deps_cpp_info['spirv-tools'].rootpath), 'r') as rev_file:
             revision = rev_file.read()
         print('spirv-tools revision: {}'.format(revision))
@@ -79,3 +87,4 @@ conan_basic_setup(NO_OUTPUT_DIRS)''')
         _create_directory('{}/submodules/Vulkan-LoaderAndValidationLayers/'.format(self.build_folder))
         with open(commit_id_header, 'w') as out_file:
             out_file.write('#pragma once\n#define SPIRV_TOOLS_COMMIT_ID "{}"'.format(revision))
+
