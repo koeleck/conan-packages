@@ -54,21 +54,39 @@ conan_basic_setup(NO_OUTPUT_DIRS)''')
         cmake.definitions['BUILD_TESTS'] = False
         cmake.definitions['BUILD_DEMOS'] = False
         cmake.definitions['BUILD_VIA'] = False
+        cmake.definitions['BUILD_VLF'] = False
+        cmake.definitions['BUILD_VKTRACE'] = False
+        cmake.definitions['BUILD_VKTRACE_REPLAY'] = False
         cmake.definitions['CUSTOM_GLSLANG_BIN_ROOT'] = True
         cmake.definitions['CUSTOM_SPIRV_TOOLS_BIN_ROOT'] = True
         cmake.configure(source_folder='VulkanTools')
         cmake.build()
 
     def package(self):
-        self.copy('*.h', dst='include', src='hello')
-        self.copy('*hello.lib', dst='lib', keep_path=False)
-        self.copy('*.dll', dst='bin', keep_path=False)
-        self.copy('*.so', dst='lib', keep_path=False)
-        self.copy('*.dylib', dst='lib', keep_path=False)
-        self.copy('*.a', dst='lib', keep_path=False)
+        self.copy('*.h*', dst='include', src='{}/VulkanTools/submodules/Vulkan-LoaderAndValidationLayers/include'.format(self.source_folder))
+        self.copy('vk_dispatch_table_helper.h', dst='include/vulkan', src='{}/submodules/Vulkan-LoaderAndValidationLayers'.format(self.build_folder), keep_path=False)
+        self.copy('vk_layer_dispatch_table.h', dst='include/vulkan', src='{}/submodules/Vulkan-LoaderAndValidationLayers'.format(self.build_folder), keep_path=False)
+
+        #TODO json files
+        extra_path = '/{}'.format(self.settings.build_type) if self.settings.os == 'Windows' else ''
+        paths = ['layersvt', 'submodules/Vulkan-LoaderAndValidationLayers/layers',
+                 'submodules/Vulkan-LoaderAndValidationLayers/loader']
+        for p in paths:
+            src = '{}/{}{}'.format(self.build_folder, p, extra_path)
+            self.copy('*.lib', dst='lib', src=src, keep_path=False)
+            self.copy('*.dll', dst='bin', src=src, keep_path=False)
+            self.copy('*.so', dst='lib', src=src, keep_path=False)
+            self.copy('*.dylib', dst='lib', src=src, keep_path=False)
+            self.copy('*.a', dst='lib', src=src, keep_path=False)
+        src = '{}/submodules/Vulkan-LoaderAndValidationLayers{}'.format(self.build_folder, extra_path)
+        self.copy('VkLayer_utils.lib', dst='lib', src=src, keep_path=False)
+        self.copy('VkLayer_utils.dll', dst='bin', src=src, keep_path=False)
+        self.copy('VkLayer_utils.so', dst='lib', src=src, keep_path=False)
+        self.copy('VkLayer_utils.dylib', dst='lib', src=src, keep_path=False)
+        self.copy('VkLayer_utils.a', dst='lib', src=src, keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libs = ['hello']
+        self.cpp_info.libs = ['vulkan-1']
 
     # Helper
     def _generate_commit_id_header(self):
@@ -81,8 +99,7 @@ conan_basic_setup(NO_OUTPUT_DIRS)''')
         _make_empty_file('{}/external/glslang/External/spirv-tools/.git/index'.format(lvl_dir))
 
         with open('{}/revision.txt'.format(self.deps_cpp_info['spirv-tools'].rootpath), 'r') as rev_file:
-            revision = rev_file.read()
-        print('spirv-tools revision: {}'.format(revision))
+            revision = rev_file.readline().strip()
         commit_id_header = '{}/submodules/Vulkan-LoaderAndValidationLayers/spirv_tools_commit_id.h'.format(self.build_folder)
         _create_directory('{}/submodules/Vulkan-LoaderAndValidationLayers/'.format(self.build_folder))
         with open(commit_id_header, 'w') as out_file:
