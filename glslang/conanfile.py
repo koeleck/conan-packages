@@ -47,6 +47,7 @@ target_include_directories(SPIRV-Tools-opt INTERFACE "${CONAN_INCLUDE_DIRS_SPIRV
             rev_file.write(self._revision)
 
     def package_info(self):
+        self.user_info.revision = self._revision
         self.cpp_info.libs = ['glslang',
                               'HLSL',
                               'OGLCompiler',
