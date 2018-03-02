@@ -1,6 +1,4 @@
-#include <iostream>
-#include "hello.h"
+#include <vulkan/vulkan.h>
 
 int main() {
-    hello();
 }
