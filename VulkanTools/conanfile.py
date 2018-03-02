@@ -22,10 +22,9 @@ class VulkantoolsConan(ConanFile):
     url = 'https://github.com/koeleck/conan-packages/tree/master/VulkanTools'
     description = 'LunarG Vulkan SDK'
     settings = 'os', 'compiler', 'build_type', 'arch'
-    options = {'shared': [True, False]}
-    default_options = 'shared=False'
     requires = 'glslang/2651cca@koeleck/testing' # pulls in spirv-tools
     generators = 'cmake'
+    short_paths = True
 
     def source(self):
         revision = '2fbb616a7fe0230b3255cd0c5307fcd8551f3b1d'
@@ -91,8 +90,7 @@ conan_basic_setup(NO_OUTPUT_DIRS)''')
     def package_info(self):
         vulkan_lib = 'vulkan-1' if self.settings.os == 'Windows' else 'vulkan'
         self.cpp_info.libs = [vulkan_lib]
-        self.cpp_info.defines = ['VULKAN_TOOLS_VK_LAYER_PATH={}{}layers.d'.format(
-                self.cpp_info.rootpath, os.path.sep)]
+        self.user_info.vk_layer_path = '{}/layers.d'.format(str(self.cpp_info.rootpath).replace('\\', '/'))
 
     # Helper
     def _generate_commit_id_header(self):
@@ -104,12 +102,10 @@ conan_basic_setup(NO_OUTPUT_DIRS)''')
         _make_empty_file('{}/external/glslang/External/spirv-tools/.git/HEAD'.format(lvl_dir))
         _make_empty_file('{}/external/glslang/External/spirv-tools/.git/index'.format(lvl_dir))
 
-        with open('{}/revision.txt'.format(self.deps_cpp_info['spirv-tools'].rootpath), 'r') as rev_file:
-            revision = rev_file.readline().strip()
         commit_id_header = '{}/submodules/Vulkan-LoaderAndValidationLayers/spirv_tools_commit_id.h'.format(self.build_folder)
         _create_directory('{}/submodules/Vulkan-LoaderAndValidationLayers/'.format(self.build_folder))
         with open(commit_id_header, 'w') as out_file:
-            out_file.write('#pragma once\n#define SPIRV_TOOLS_COMMIT_ID "{}"'.format(revision))
+            out_file.write('#pragma once\n#define SPIRV_TOOLS_COMMIT_ID "{}"'.format(self.deps_user_info["spirv-tools"].revision))
 
     def _adjust_json_line(self, line):
         match = re.fullmatch(r'^(.*)"library_path":[ \t]*".*?((?:lib|)VkLayer[^"]*)"(.*\n?)$', line)
