@@ -11,9 +11,13 @@ class SpirvtoolsConan(ConanFile):
     url = 'https://github.com/koeleck/conan-packages/tree/master/spirv-tools'
     description = 'SPIRV-Tools package for conan'
     settings = 'os', 'compiler', 'build_type', 'arch'
-    options = {'shared': [True, False]}
-    default_options = 'shared=False'
+    options = {'fPIC': [True, False]}
+    default_options = 'fPIC=False'
     generators = 'cmake'
+
+    def config_options(self):
+        if self.settings.compiler == 'Visual Studio':
+            self.options.remove('fPIC')
 
     def source(self):
         download('https://github.com/KhronosGroup/SPIRV-Tools/archive/v{}.zip'.format(self.version), 'spirv-tools.zip')
@@ -40,6 +44,8 @@ conan_basic_setup()''')
         cmake = CMake(self)
         cmake.definitions['SPIRV_SKIP_EXECUTABLES'] = True
         cmake.definitions['SPIRV-Headers_SOURCE_DIR'] = '{}/spirv-headers'.format(self.source_folder)
+        if not self.settings.compiler == 'Visual Studio':
+            cmake.definitions['CMAKE_POSITION_INDEPENDENT_CODE'] = self.options.fPIC
         cmake.configure(source_folder='spirv-tools')
         cmake.build()
 
@@ -59,4 +65,5 @@ conan_basic_setup()''')
 
     def package_info(self):
         self.cpp_info.libs = ['SPIRV-Tools', 'SPIRV-Tools-link', 'SPIRV-Tools-opt']
+        self.user_info.revision = self._revision
 
