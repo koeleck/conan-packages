@@ -56,6 +56,7 @@ conan_basic_setup(NO_OUTPUT_DIRS)''')
         cmake.build()
 
     def package(self):
+        self.copy('license*', dst='.', src='{}/VulkanTools'.format(self.source_folder), ignore_case=True, keep_path=False)
         self.copy('*.h*', dst='include', src='{}/VulkanTools/submodules/Vulkan-LoaderAndValidationLayers/include'.format(self.source_folder))
         self.copy('vk_dispatch_table_helper.h', dst='include/vulkan', src='{}/submodules/Vulkan-LoaderAndValidationLayers'.format(self.build_folder), keep_path=False)
         self.copy('vk_layer_dispatch_table.h', dst='include/vulkan', src='{}/submodules/Vulkan-LoaderAndValidationLayers'.format(self.build_folder), keep_path=False)
