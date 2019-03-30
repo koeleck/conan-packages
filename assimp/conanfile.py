@@ -7,61 +7,50 @@ class AssimpConan(ConanFile):
     name = 'assimp'
     version = '4.1.0'
     license = 'BSD 3-Clause'
-    url = '<Package recipe repository url here, for issues about the package>'
+    url = 'https://github.com/assimp/assimp/issues'
     description = 'Conan package for assimp library'
     requires = 'zlib/1.2.11@conan/stable'
     settings = 'os', 'compiler', 'build_type', 'arch'
-    options = {'shared': [True, False]}
-    default_options = 'shared=False'
+    source_subfolder = 'assimp'
+    no_copy_source = True
+    options = {
+        'shared': [True, False],
+        'fPIC': [True, False]
+    }
+    default_options = 'shared=False', 'fPIC=True'
     generators = 'cmake'
 
+    def config_options(self):
+        if self.settings.os == "Windows":
+            del self.options.fPIC
+
     def source(self):
-        zip_file = 'v{}.zip'.format(self.version)
-        download('https://github.com/assimp/assimp/archive/{}'.format(zip_file), zip_file)
-        check_sha256(zip_file, '407be74f44f488fcf1aac3492d962452ddde89561906e917a208c75e1192bcdc')
-        unzip(zip_file)
-        os.unlink(zip_file)
-        # This small hack might be useful to guarantee proper /MT /MD linkage in MSVC
-        # if the packaged project doesn't have variables to set it properly
-        tools.replace_in_file('assimp-{}/CMakeLists.txt'.format(self.version), 'PROJECT( Assimp )', '''PROJECT( Assimp )
+        url = 'https://github.com/assimp/assimp/archive/v{}.zip'.format(self.version)
+        tools.get(url, sha256='407be74f44f488fcf1aac3492d962452ddde89561906e917a208c75e1192bcdc')
+        os.rename('assimp-{}'.format(self.version), self.source_subfolder)
+
+        tools.replace_in_file(os.path.join(self.source_subfolder, 'CMakeLists.txt'), 'PROJECT( Assimp )', '''PROJECT( Assimp )
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()''')
-        # Use assimp's minizip
-        tools.replace_in_file('assimp-{}/CMakeLists.txt'.format(self.version), 'use_pkgconfig(UNZIP minizip)', '')
 
     def build(self):
         cmake = CMake(self)
-        defs = {
-            'BUILD_SHARED_LIBS': self.options.shared,
-            'ASSIMP_BUILD_ASSIMP_TOOLS': False,
-            'ASSIMP_BUILD_SAMPLES': False,
-            'ASSIMP_BUILD_TESTS': False
-        }
-        cmake.configure(source_folder='assimp-{}'.format(self.version), defs=defs)
+        cmake.definitions['ASSIMP_NO_EXPORT'] = True
+        cmake.definitions['ASSIMP_BUILD_ASSIMP_TOOLS'] = False
+        cmake.definitions['ASSIMP_BUILD_SAMPLES'] = False
+        cmake.definitions['ASSIMP_BUILD_TESTS'] = False
+        cmake.definitions['ASSIMP_BUILD_TESTS'] = False
+        cmake.definitions['ASSIMP_INSTALL_PDB'] = False
+        cmake.configure(source_folder=self.source_subfolder)
         cmake.build()
+        cmake.install()
 
     def package(self):
-        self.copy('LICENSE', dst='.', src='{}/assimp-{}'.format(self.source_folder, self.version), keep_path=False, ignore_case=True)
-        self.copy('*.h', dst='include', src='{}/include'.format(self.build_folder))
-        self.copy('*.h', dst='include', src='{}/assimp-{}/include'.format(self.source_folder, self.version))
-        self.copy('*.inl', dst='include', src='{}/assimp-{}/include'.format(self.source_folder, self.version))
-        if self.options.shared:
-            self.copy('assimp*.lib', dst='lib', src='{}/lib'.format(self.build_folder), keep_path=False)
-        else:
-            self.copy('*.lib', dst='lib', src='{}/lib'.format(self.build_folder), keep_path=False)
-        self.copy('*.dll', dst='lib', src='{}/bin'.format(self.build_folder), keep_path=False)
-        self.copy('*.so', dst='lib', src='{}/lib'.format(self.build_folder), keep_path=False)
-        self.copy('*.dylib', dst='lib', src='{}/lib'.format(self.build_folder), keep_path=False)
-        self.copy('*.a', dst='lib', src='{}/lib'.format(self.build_folder), keep_path=False)
+        self.copy('license*', src=self.source_subfolder, ignore_case=True, keep_path=False)
 
     def package_info(self):
-        if self.settings.compiler == 'Visual Studio':
-            if self.settings.compiler.version == '15':
-                msvc_version = 140
-            else:
-                msvc_version = int(str(self.settings.compiler.version)) * 10
-            self.cpp_info.libs = ['assimp-vc{}-mt'.format(msvc_version)]
-        else:
-            self.cpp_info.libs = ['assimp']
-        if not self.options.shared:
-            self.cpp_info.libs.append('IrrXML')
+        libs = tools.collect_libs(self)
+        # Ensure linking order
+        libs = [l for l in libs if 'assimp' in l.lower()] + [l for l in libs if 'assimp' not in l.lower()]
+        self.cpp_info.libs = libs
+
